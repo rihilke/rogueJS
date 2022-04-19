@@ -17,12 +17,61 @@ body { background-color: #000000; color: #ffffff; }
 h1 { font-family: "Playfair Display"; font-size: 30px; padding: 10px 0px; margin: 0px; }
 .field-box { border: 2px solid #d0d0d0; float: left; }
 .field { position: relative; width: 1024px; height: 640px; }
-.field .tile { position: absolute; width: 50px; height: 50px; background-size: 100%; background-image: url(images/tile-.png); z-index: 5; top: 0px; left: 0px;}
-.field .tileW { background-image: url(images/tile-W.png); }					<!--Wall-->
-.field .tileE { background-image: url(images/tile-E.png); z-index: 10; }	<!--Enemy-->
-.field .tileP { background-image: url(images/tile-P.png); z-index: 10; }	<!--Player-->
-.field .tileHP { background-image: url(images/tile-HP.png); z-index: 9; }	<!--HP-->
-.field .tileSW { background-image: url(images/tile-SW.png); z-index: 9; }	<!--Sword-->
+.field .tile { 
+	position: absolute; 
+	width: 50px; 
+	height: 50px; 
+	background-size: 100%; 
+	background-image: url(images/tile-.png); 
+	z-index: 5; 
+	top: 0px; 
+	left: 0px;
+}
+.field .tileW { 
+	background-image: url(images/tile-W.png); 
+	z-index: 5;
+	position: absolute;
+	width: 50px;
+	height: 50px; 
+	background-size: 100%; 
+	top: 0px; 
+	left: 0px;
+}
+.field .tileSW { 
+	background-image: url(images/tile-SW.png); 
+	z-index: 9; 
+	position: absolute; 
+	width: 50px; 
+	height: 50px; 
+	background-size: 100%; 
+	top: 0px; 
+	left: 0px;
+}	
+
+.field .tileE { background-image: url(images/tile-E.png); z-index: 10; 
+	position: absolute; 
+	width: 50px; 
+	height: 50px; 
+	background-size: 100%; 
+	top: 0px; 
+	left: 0px;}
+.field .tileP { background-image: url(images/tile-P.png); z-index: 10; 
+	position: absolute; 
+	width: 50px; 
+	height: 50px; 
+	background-size: 100%; 
+	top: 0px; 
+	left: 0px;}
+.field .tileHP { 
+	background-image: url(images/tile-HP.png); 
+	z-index: 9; 
+	position: absolute; 
+	width: 50px; 
+	height: 50px; 
+	background-size: 100%; 
+	top: 0px; 
+	left: 0px;
+}
 .field .tile .health { background-color: #ff0000; z-index: 11; position: absolute; left: 0px; top: 0px; height: 3px; }
 .field .tileP .health { background-color: #00ff00; z-index: 11; position: absolute; left: 0px; top: 0px; height: 3px; }
 .inventory-box { border: 2px solid #d0d0d0; float: left; }
@@ -32,7 +81,7 @@ h1 { font-family: "Playfair Display"; font-size: 30px; padding: 10px 0px; margin
 	</head>
 	<body>
 		<h1>Игровое поле</h1>
-		<div class="field-box"><div class="field" id="field"></div></div>
+		<div class="field-box"><div class="field"></div></div>
 		<div class="cl"></div>
 		<!--h1>Инвентарь</h1>
 		<div class="inventory-box"><div class="inventory"></div></div-->
