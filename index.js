@@ -24,12 +24,13 @@ let playfield = new Array(row);
 //карта объектов
 //1 пустота
 let entityField = new Array(row);
-for(var i = 0; i < row; i++){
-    entityField[i] = new Array(col);
-    for(let j = 0; j < col; j++){
-        entityField[i][j] = 1;
+    for(var i = 0; i < row; i++){
+        entityField[i] = new Array(col);
+        for(let j = 0; j < col; j++){
+            entityField[i][j] = 1;
+        }
     }
-}    
+//    
 function getPassages(){
     // проложить вертикальные и горизонтальные проходы
     let rowRandom = new Array(getRandomInt(3, 5));
@@ -46,11 +47,11 @@ function getPassages(){
         for(let j = 0; j < col; j++){
             for(let g = 0; g < rowRandom.length; g++){
                 if(rowRandom[g] === i)
-                playfield[i][j] = 1;
+                    playfield[i][j] = 1;
             }
             for(let h = 0; h < colRandom.length; h++){
                 if(colRandom[h] === j)
-                playfield[i][j] = 1;
+                    playfield[i][j] = 1;
             }
         }
     }
@@ -230,13 +231,16 @@ class Entity {
     */
     
     deleteEntity(){
-        let el = document.getElementById(this.index);
-        //1 проход
-        entityField[this.coordinate[0]][this.coordinate[1]] = 1;
-        
-        //delete entitiesArray[this.index];
-        entitiesArray.splice(this.index, 1);
-        el.remove();
+        if(this.mark !== 2){
+            let el = document.getElementById(this.index);
+            //1 проход
+            entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+            console.log(this.coordinate);
+            
+            //delete entitiesArray[this.index];
+            entitiesArray.splice(this.index, 1);
+            el.remove();
+        }
     }
 
     getItem(){
@@ -244,32 +248,37 @@ class Entity {
             //5 лечилка
             if(this.lookItem().mark === 5){
                 this.health += this.lookItem().health;
-            }
+                this.lookItem().deleteEntity();
+
+            } else
             //5 меч
             if(this.lookItem().mark === 4){
                 this.hit += this.lookItem().hit;
+                this.lookItem().deleteEntity();
             }
-            this.lookItem().deleteEntity();
-            console.log(entitiesArray);
+            console.log(this.lookItem());
         }
     }
 
     lookItem(){
         if(entityField[this.coordinate[0]][this.coordinate[1]] !== 1){
+            
             for(let i = 0; i < entitiesArray.length; i++){
                 if( this.coordinate[0] === entitiesArray[i].coordinate[0] &&
                     this.coordinate[1] === entitiesArray[i].coordinate[1] &&
-                    this.mark === 2
+                    entitiesArray[i].mark !== 2
                 ){
                     console.log(entitiesArray[i]);
                     return entitiesArray[i];
                 }
-                
             }
         }
     }
 
-}
+    
+
+
+} //конец сущности
 //0 стена
 //1 проход
 //1 пустота
@@ -295,8 +304,24 @@ class Person extends Entity{
                 parent[i].append(p);
             }
         }
-        
-       
+    }
+
+    checkHealth(){
+        if(this.health <= 0){
+            this.deletePerson();
+            console.log(this.index + ' dead');
+        }
+    }
+    
+    deletePerson(){
+            let el = document.getElementById(this.index);
+            //1 проход
+            entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+            console.log(this.coordinate);
+            
+            //delete entitiesArray[this.index];
+            entitiesArray.splice(this.index, 1);
+            el.remove();
     }
 }
 //конец Сущности
@@ -330,42 +355,60 @@ class Enemy extends Person{
 class Player extends Person{
     className ='tileP';
     mark = 2;
-    //health = 1;
+    health = 5;
     //hit =
+    attackAll(){
+        for(let i = 0; i < entitiesArray.length; i++){
+            if( (
+                 Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]) + 
+                 Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1]) <= 1 
+                 
+            ) &&
+        
+                entitiesArray[i].mark === 3
+            ){
+                this.health -= entitiesArray[i].hit;
+                entitiesArray[i].health -= this.hit;
+                this.checkHealth();
+                entitiesArray[i].checkHealth();
+                console.log(entitiesArray[i]);
+            }
+        }
+    }
 }
 
 window.onload = function() {
     getPassages();
     getRooms();
     drawMap();
-    let sword = new Sword();
-    sword.createInPlace();    
-    let HP   = new HealingPotion();
-    HP.createInPlace();
-    for (let i = 0; i < 3; i++){
-        let sword = new Sword();
-        sword.createInPlace();    
-        let HP   = new HealingPotion();
-        HP.createInPlace();
-    }
+
+    let player = new Player();
+    player.createInPlace();
+    player.showFullHealth();
+  
+    
     for(let i = 0; i < 10; i++){
         let enemy = new Enemy();
         enemy.createInPlace();
         enemy.showFullHealth();
     }
     
+    for (let i = 0; i < 3; i++){
+        let sword = new Sword();
+        sword.createInPlace();    
+        let HP   = new HealingPotion();
+        HP.createInPlace();
+    }
     
-    let player = new Player();
-    player.createInPlace();
-    player.showFullHealth();
 
     //console.log(entitiesArray);
 
     document.addEventListener('keydown', function(e) {
         //Space
         if (e.which ===  32){
-            sword.deleteEntity();
+            //sword.deleteEntity();
             //console.log(entitiesArray);
+            player.attackAll();
         }
         //Arrow Up, W	
         if( e.which === 38 || e.which === 87 ){
