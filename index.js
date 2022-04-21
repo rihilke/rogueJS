@@ -1,13 +1,19 @@
 //0 стена
 //1 проход
+//2 игрок
+//3 противник
+//4 меч
+//5 лечилка
 
 let weidth = 1024;
 let height = 640;
 let grid = 50;
+let entitiesArray = new Array();
 
 let row = Math.ceil(height / grid) ;
 let col = Math.ceil(weidth / grid) ;
 //карта проходов
+//0 стена
 let playfield = new Array(row);
     for(var i = 0; i < row; i++){
         playfield[i] = new Array(col);
@@ -16,11 +22,12 @@ let playfield = new Array(row);
         }
     } 
 //карта объектов
+//1 пустота
 let entityField = new Array(row);
 for(var i = 0; i < row; i++){
-    playfield[i] = new Array(col);
+    entityField[i] = new Array(col);
     for(let j = 0; j < col; j++){
-        playfield[i][j] = 0;
+        entityField[i][j] = 1;
     }
 }    
 function getPassages(){
@@ -84,9 +91,9 @@ function getRooms(){
 function drawMap(){
         //отрисовать карту
     for(var i = 0; i < row; i++){ 
-        for(var j = 0; j < col; j++){       
+        for(var j = 0; j < col; j++){ 
+            //1 проход
             if(playfield[i][j] === 1){
-                //1 проход
                 let parent = document.querySelector('.field');
                 let p = document.createElement('div');
                 p.className = 'tile';
@@ -106,21 +113,36 @@ function drawMap(){
         }
     }
 }
-
+//0 стена
+//1 проход
+//2 игрок
+//3 противник
+//4 меч
+//5 лечилка
 class Entity {
-    constructor(id){
+    constructor(){
         this.coordinate = getRandomCoordinate();
-        this.id = id;
+        //this.id = id;
+        //вместо id используем индекс
     }
-
+    
     createInPlace(){
+        entitiesArray.push(this);
+        this.index = entitiesArray.length - 1;
         let parent = document.querySelector('.field');
         let p = document.createElement('div');
         p.className = this.className;
-        p.id = this.id;
+        p.id = this.index;
         p.style.top = (grid*this.coordinate[0])+'px';
         p.style.left = (grid*this.coordinate[1])+'px';
-        playfield[this.coordinate[0]][this.coordinate[1]] = this.mark;
+
+            //если не игрок и не враг
+        if(this.mark !== 2 && this.mark !== 3){
+                    //прописываем на карте итемов
+            entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+        }
+        
+        //console.log(this.mark);
         parent.append(p);
     }
     
@@ -131,13 +153,16 @@ class Entity {
             )
             {
                 //1 проход
-                playfield[this.coordinate[0]][this.coordinate[1]] = 1;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[0] = this.coordinate[0]-1;
-                let el = document.getElementById(this.id);
+                let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                playfield[this.coordinate[0]][this.coordinate[1]] = this.mark;
-            } 
+                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                if(this.mark === 2){
+                    this.getItem();
+                }
+            }
     }
 
     moveDOWN(){
@@ -147,12 +172,16 @@ class Entity {
             )
             {
                 //1 проход
-                playfield[this.coordinate[0]][this.coordinate[1]] = 1;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[0] = this.coordinate[0]+1;
-                let el = document.getElementById(this.id);
+                let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                playfield[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                if(this.mark === 2){
+                    this.getItem();
+                }
+
             }
     }
     moveRIGHT(){
@@ -162,12 +191,15 @@ class Entity {
             )
             {
                 //1 проход
-                playfield[this.coordinate[0]][this.coordinate[1]] = 1;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[1] = this.coordinate[1]+1;
-                let el = document.getElementById(this.id);
+                let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                playfield[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                if(this.mark === 2){
+                    this.getItem();
+                }
             }
     }
 
@@ -178,92 +210,162 @@ class Entity {
             )
             {
                 //1 проход
-                playfield[this.coordinate[0]][this.coordinate[1]] = 1;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[1] = this.coordinate[1]-1;
-                let el = document.getElementById(this.id);
+                let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                playfield[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                if(this.mark === 2){
+                    this.getItem();
+                }
             }
     }
     /*
+    //вернуть функцию
     arrRandomMove = [this.moveUP, this.moveDOWN, this.moveLEFT, this.moveRIGHT];
     moveRandom() {
        return arrRandomMove[getRandomInt(0, this.arrRandomMove.length)]();
     }
     */
     
-    delete(){
-        let el = document.getElementById(this.id);
+    deleteEntity(){
+        let el = document.getElementById(this.index);
         //1 проход
-        playfield[this.coordinate[0]][this.coordinate[1]] = 1;
+        entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+        
+        //delete entitiesArray[this.index];
+        entitiesArray.splice(this.index, 1);
         el.remove();
     }
 
-}
-//конец Сущности
-class Sword extends Entity{
-    className ='tileSW';
-    mark = 'Sword';
-}
+    getItem(){
+        if(this.lookItem()){
+            //5 лечилка
+            if(this.lookItem().mark === 5){
+                this.health += this.lookItem().health;
+            }
+            //5 меч
+            if(this.lookItem().mark === 4){
+                this.hit += this.lookItem().hit;
+            }
+            this.lookItem().deleteEntity();
+            console.log(entitiesArray);
+        }
+    }
 
-class HealingPotion extends Entity{
-    className = 'tileHP';
-    mark = 'HP';
-}
+    lookItem(){
+        if(entityField[this.coordinate[0]][this.coordinate[1]] !== 1){
+            for(let i = 0; i < entitiesArray.length; i++){
+                if( this.coordinate[0] === entitiesArray[i].coordinate[0] &&
+                    this.coordinate[1] === entitiesArray[i].coordinate[1] &&
+                    this.mark === 2
+                ){
+                    console.log(entitiesArray[i]);
+                    return entitiesArray[i];
+                }
+                
+            }
+        }
+    }
 
+}
+//0 стена
+//1 проход
+//1 пустота
+//2 игрок
+//3 противник
+//4 меч
+//5 лечилка
 class Person extends Entity{
     maxHealth = 2;
     health = 2;
     hit = 1;
 
     showFullHealth(){
-        let parent = document.querySelector('.'+this.className);
-        let p = document.createElement('div');
-        p.className = 'health';
-        p.style.width = grid;
-        p.style.position = 'relative';
-//        p.style.top = (grid*this.coordinate[0])+'px';
-//        p.style.left = (grid*this.coordinate[1])+'px';
-        parent.append(p);
+        let parent = document.querySelectorAll('.'+this.className);
+        for(let i = 0; i < parent.length; i++){
+            if(parent[i].id == this.index){
+                let p = document.createElement('div');
+                p.className = 'health';
+                p.style.width = grid;
+                p.style.position = 'relative';
+        //        p.style.top = (grid*this.coordinate[0])+'px';
+        //        p.style.left = (grid*this.coordinate[1])+'px';
+                parent[i].append(p);
+            }
+        }
+        
+       
     }
+}
+//конец Сущности
+//0 стена
+//1 проход
+//2 игрок
+//3 противник
+//4 меч
+//5 лечилка
+class Sword extends Entity{
+    className ='tileSW';
+    mark = 4;
+    //для плюсования
+    hit = 2;
+}
+
+class HealingPotion extends Entity{
+    className = 'tileHP';
+    mark = 5;
+    //для плюсования
+    health = 2;
 }
 
 class Enemy extends Person{
     className ='tileE';
-    mark = 'Enemy';
+    mark = 3;
     health = 1;
+    //hit =
 }
 
 class Player extends Person{
     className ='tileP';
-    mark = 'Player';
-
+    mark = 2;
+    //health = 1;
+    //hit =
 }
 
 window.onload = function() {
     getPassages();
     getRooms();
     drawMap();
-    let sword = new Sword('s');
-    sword.createInPlace();
-
-    //TODO factory
-    
-    let HP   = new HealingPotion('hp');
+    let sword = new Sword();
+    sword.createInPlace();    
+    let HP   = new HealingPotion();
     HP.createInPlace();
-    let enemy = new Enemy('e');
-    enemy.createInPlace();
-    enemy.showFullHealth();
+    for (let i = 0; i < 3; i++){
+        let sword = new Sword();
+        sword.createInPlace();    
+        let HP   = new HealingPotion();
+        HP.createInPlace();
+    }
+    for(let i = 0; i < 10; i++){
+        let enemy = new Enemy();
+        enemy.createInPlace();
+        enemy.showFullHealth();
+    }
     
-    let player = new Player('player');
+    
+    let player = new Player();
     player.createInPlace();
     player.showFullHealth();
+
+    //console.log(entitiesArray);
 
     document.addEventListener('keydown', function(e) {
         //Space
         if (e.which ===  32){
-        //    sword.delete();
+            sword.deleteEntity();
+            //console.log(entitiesArray);
         }
         //Arrow Up, W	
         if( e.which === 38 || e.which === 87 ){
@@ -283,35 +385,42 @@ window.onload = function() {
             player.moveLEFT();
         }
 
-        //random
+        //random for enemy
         if(
             e.which === 38 || e.which === 87 ||
             e.which === 40 || e.which === 83 ||
             e.which === 39 || e.which === 68 ||
             e.which === 37 || e.which === 65
-        ){
-            let i = getRandomInt(0, 3)
-            switch(i) {
-                case 0:  
-                    enemy.moveDOWN();
-                    break
-                case 1:  
-                    enemy.moveLEFT();
-                    break
-                case 2:
-                    enemy.moveRIGHT();
-                    break
-                case 3:
-                    enemy.moveUP();
-                    break
-                default:
-                    break
-            }
+        ){  
+            for(let i = 0; i < entitiesArray.length; i++){
+                let x = getRandomInt(0, 4);
+                if(entitiesArray[i].mark === 3){
+                    switch(x) {
+                        case 0:  
+                        entitiesArray[i].moveDOWN();
+                            break
+                        case 1:  
+                        entitiesArray[i].moveLEFT();
+                            break
+                        case 2:
+                            entitiesArray[i].moveRIGHT();
+                            break
+                        case 3:
+                            entitiesArray[i].moveUP();
+                            break
+                        case 4:
+                            break
+                        default:
+                            break
+                    }
+                }
+            }           
         }
     });
 };
 
 /** утилс**/
+
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -330,6 +439,7 @@ function getRandomCoordinate(){
     return coordinate;
 }
 
+/*
 function createInRandomPlace(className){
     let coordinate = getRandomCoordinate();
     let parent = document.querySelector('.field');
