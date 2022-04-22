@@ -30,7 +30,17 @@ let entityField = new Array(row);
             entityField[i][j] = 1;
         }
     }
-//    
+//  
+//карта противников
+//1 пустота
+let enemyField = new Array(row);
+    for(var i = 0; i < row; i++){
+        enemyField[i] = new Array(col);
+        for(let j = 0; j < col; j++){
+            enemyField[i][j] = 1;
+        }
+    }
+//      
 function getPassages(){
     // проложить вертикальные и горизонтальные проходы
     let rowRandom = new Array(getRandomInt(3, 5));
@@ -141,6 +151,8 @@ class Entity {
         if(this.mark !== 2 && this.mark !== 3){
                     //прописываем на карте итемов
             entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+        }else{
+            enemyField[this.coordinate[0]][this.coordinate[1]] = this.mark;
         }
         
         //console.log(this.mark);
@@ -173,12 +185,12 @@ class Entity {
             )
             {
                 //1 проход
-                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[0] = this.coordinate[0]+1;
                 let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = this.mark;
                 if(this.mark === 2){
                     this.getItem();
                 }
@@ -192,12 +204,12 @@ class Entity {
             )
             {
                 //1 проход
-                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[1] = this.coordinate[1]+1;
                 let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = this.mark;
                 if(this.mark === 2){
                     this.getItem();
                 }
@@ -211,12 +223,12 @@ class Entity {
             )
             {
                 //1 проход
-                //entityField[this.coordinate[0]][this.coordinate[1]] = 1;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = 1;
                 this.coordinate[1] = this.coordinate[1]-1;
                 let el = document.getElementById(this.index);
                 el.style.top = (grid*this.coordinate[0])+'px';
                 el.style.left = (grid*this.coordinate[1])+'px';
-                //entityField[this.coordinate[0]][this.coordinate[1]] = this.mark;
+                enemyField[this.coordinate[0]][this.coordinate[1]] = this.mark;
                 if(this.mark === 2){
                     this.getItem();
                 }
@@ -238,9 +250,11 @@ class Entity {
             //console.log(this.coordinate);
             
             //delete entitiesArray[this.index];
-//            entitiesArray.splice(this.index, 1);
+            //entitiesArray.splice(this.index, 1);
 
-            entitiesArray.slice(this.index);
+            //entitiesArray.slice(this.index);
+            entitiesArray[this.index].mark = 6;
+
             el.remove();
         }
     }
@@ -249,8 +263,9 @@ class Entity {
         if(this.lookItem()){
             //5 лечилка
             if(this.lookItem().mark === 5){
-                this.health += this.lookItem().health;
-                this.showHealth();
+                this.health + this.lookItem().health > this.maxHealth? this.health = this.maxHealth : this.health + this.lookItem().health;
+                //this.health = this.health + this.lookItem().health ;
+                this.checkHealth();
                 this.lookItem().deleteEntity();
             } else
             //5 меч
@@ -316,7 +331,7 @@ class Person extends Entity{
     checkHealth(){
         if(this.health <= 0){
             this.deletePerson();
-            console.log(this.index + ' dead');
+            //console.log(this.index + ' dead');
         }
         this.showHealth();
     }
@@ -324,13 +339,13 @@ class Person extends Entity{
     deletePerson(){
             let el = document.getElementById(this.index);
             //1 проход
-            entityField[this.coordinate[0]][this.coordinate[1]] = 1;
-            console.log(this.index);
+            enemyField[this.coordinate[0]][this.coordinate[1]] = 1;
+            //console.log(this.index);
             
             //delete entitiesArray[this.index];
             //entitiesArray.splice(this.index, 1);
-            entitiesArray.slice(this.index);
-
+            //entitiesArray.slice(this.index);
+            entitiesArray[this.index].mark = 6;
             el.remove();
     }
 }
@@ -352,7 +367,7 @@ class HealingPotion extends Entity{
     className = 'tileHP';
     mark = 5;
     //для плюсования
-    health = 2;
+    health = 20;
 }
 
 class Enemy extends Person{
@@ -370,7 +385,8 @@ class Player extends Person{
     //hit =
     attackAll(){
         for(let i = 0; i < entitiesArray.length; i++){
-            if( (
+            if( 
+                (
                 //по прямой
                  Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]) + 
                  Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1]) <= 1 ||
@@ -379,14 +395,11 @@ class Player extends Person{
                  Math.hypot(
                     Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]),
                     Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1])
-                 ) <= Math.hypot(1,1)
-                 
+                    ) <= Math.hypot(1,1) 
             ) &&
-        
                 entitiesArray[i].mark === 3
-            ){
-                console.log(entitiesArray[i]);
-
+            )
+            {
                 this.health -= entitiesArray[i].hit;
                 entitiesArray[i].health -= this.hit;
                 this.checkHealth();
@@ -454,10 +467,14 @@ window.onload = function() {
             e.which === 39 || e.which === 68 ||
             e.which === 37 || e.which === 65
         ){  
-            console.log(entitiesArray);
+            //если поднял лечилку
+            player.checkHealth();
+            //console.log(entitiesArray);
             for(let i = 0; i < entitiesArray.length; i++){
                 let x = getRandomInt(0, 4);
-                if(entitiesArray[i].mark === 3){
+                if( 
+                    entitiesArray[i].mark === 3
+                    ){
                     switch(x) {
                         case 0:  
                         entitiesArray[i].moveDOWN();
