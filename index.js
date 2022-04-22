@@ -124,7 +124,7 @@ class Entity {
     constructor(){
         this.coordinate = getRandomCoordinate();
         //this.id = id;
-        //вместо id используем индекс
+        //вместо id индекс
     }
     
     createInPlace(){
@@ -235,10 +235,12 @@ class Entity {
             let el = document.getElementById(this.index);
             //1 проход
             entityField[this.coordinate[0]][this.coordinate[1]] = 1;
-            console.log(this.coordinate);
+            //console.log(this.coordinate);
             
             //delete entitiesArray[this.index];
-            entitiesArray.splice(this.index, 1);
+//            entitiesArray.splice(this.index, 1);
+
+            entitiesArray.slice(this.index);
             el.remove();
         }
     }
@@ -248,15 +250,14 @@ class Entity {
             //5 лечилка
             if(this.lookItem().mark === 5){
                 this.health += this.lookItem().health;
+                this.showHealth();
                 this.lookItem().deleteEntity();
-
             } else
             //5 меч
             if(this.lookItem().mark === 4){
                 this.hit += this.lookItem().hit;
                 this.lookItem().deleteEntity();
             }
-            console.log(this.lookItem());
         }
     }
 
@@ -268,7 +269,7 @@ class Entity {
                     this.coordinate[1] === entitiesArray[i].coordinate[1] &&
                     entitiesArray[i].mark !== 2
                 ){
-                    console.log(entitiesArray[i]);
+                   // console.log(entitiesArray[i]);
                     return entitiesArray[i];
                 }
             }
@@ -288,17 +289,23 @@ class Entity {
 //5 лечилка
 class Person extends Entity{
     maxHealth = 2;
-    health = 2;
+    health = this.maxHealth;
     hit = 1;
 
-    showFullHealth(){
+    showHealth(){
+        let percent = (this.health*100) / this.maxHealth;
+
         let parent = document.querySelectorAll('.'+this.className);
         for(let i = 0; i < parent.length; i++){
             if(parent[i].id == this.index){
+                if(parent[i].firstChild){
+                    parent[i].removeChild(parent[i].firstChild);
+                }
                 let p = document.createElement('div');
                 p.className = 'health';
                 p.style.width = grid;
                 p.style.position = 'relative';
+                p.style.width = percent + '%';
         //        p.style.top = (grid*this.coordinate[0])+'px';
         //        p.style.left = (grid*this.coordinate[1])+'px';
                 parent[i].append(p);
@@ -311,16 +318,19 @@ class Person extends Entity{
             this.deletePerson();
             console.log(this.index + ' dead');
         }
+        this.showHealth();
     }
     
     deletePerson(){
             let el = document.getElementById(this.index);
             //1 проход
             entityField[this.coordinate[0]][this.coordinate[1]] = 1;
-            console.log(this.coordinate);
+            console.log(this.index);
             
             //delete entitiesArray[this.index];
-            entitiesArray.splice(this.index, 1);
+            //entitiesArray.splice(this.index, 1);
+            entitiesArray.slice(this.index);
+
             el.remove();
     }
 }
@@ -348,30 +358,39 @@ class HealingPotion extends Entity{
 class Enemy extends Person{
     className ='tileE';
     mark = 3;
-    health = 1;
+    maxHealth = 2;
     //hit =
 }
 
 class Player extends Person{
     className ='tileP';
     mark = 2;
-    health = 5;
+    maxHealth = 20;
+    health = this.maxHealth;
     //hit =
     attackAll(){
         for(let i = 0; i < entitiesArray.length; i++){
             if( (
+                //по прямой
                  Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]) + 
-                 Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1]) <= 1 
+                 Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1]) <= 1 ||
+
+                 //по диагонали
+                 Math.hypot(
+                    Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]),
+                    Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1])
+                 ) <= Math.hypot(1,1)
                  
             ) &&
         
                 entitiesArray[i].mark === 3
             ){
+                console.log(entitiesArray[i]);
+
                 this.health -= entitiesArray[i].hit;
                 entitiesArray[i].health -= this.hit;
                 this.checkHealth();
                 entitiesArray[i].checkHealth();
-                console.log(entitiesArray[i]);
             }
         }
     }
@@ -384,13 +403,13 @@ window.onload = function() {
 
     let player = new Player();
     player.createInPlace();
-    player.showFullHealth();
+    player.showHealth();
   
     
     for(let i = 0; i < 10; i++){
         let enemy = new Enemy();
         enemy.createInPlace();
-        enemy.showFullHealth();
+        enemy.showHealth();
     }
     
     for (let i = 0; i < 3; i++){
@@ -435,6 +454,7 @@ window.onload = function() {
             e.which === 39 || e.which === 68 ||
             e.which === 37 || e.which === 65
         ){  
+            console.log(entitiesArray);
             for(let i = 0; i < entitiesArray.length; i++){
                 let x = getRandomInt(0, 4);
                 if(entitiesArray[i].mark === 3){
