@@ -171,6 +171,9 @@ class Entity {
         if(this.mark === 2){
             this.getItem();
         }
+        if(this.mark === 3){
+            this.attackPlayer();
+        }
     }
     
     moveUP(){
@@ -358,6 +361,20 @@ class Enemy extends Person{
     maxHealth = 2;
     health = this.maxHealth;
     //hit =
+    attackPlayer(){
+        for(let i = 0; i < entitiesArray.length; i++){
+            if( entitiesArray[i].mark === 2 && 
+                //по прямой
+                 Math.abs(this.coordinate[0] - entitiesArray[i].coordinate[0]) + 
+                 Math.abs(this.coordinate[1] - entitiesArray[i].coordinate[1]) <= 1 
+            ){
+                this.health -= entitiesArray[i].hit;
+                entitiesArray[i].health -= this.hit;
+                this.checkHealth();
+                entitiesArray[i].checkHealth();
+            }
+        }
+    }
 }
 
 class Player extends Person{
